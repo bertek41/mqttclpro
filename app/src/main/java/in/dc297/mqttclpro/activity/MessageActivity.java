@@ -1,9 +1,9 @@
 package in.dc297.mqttclpro.activity;
 
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
 import android.view.MenuInflater;
@@ -12,8 +12,6 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdView;
-
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -21,7 +19,6 @@ import in.dc297.mqttclpro.R;
 import in.dc297.mqttclpro.databinding.MessagesListItemBinding;
 import in.dc297.mqttclpro.entity.MessageEntity;
 import in.dc297.mqttclpro.entity.TopicEntity;
-import in.dc297.mqttclpro.helpers.AdsHelper;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
 import io.reactivex.functions.Consumer;
@@ -76,7 +73,7 @@ public class MessageActivity extends AppCompatActivity {
                         setTitle(topic.getName() + " - " + (topic.getType()==0?"Received":"Published")+" messages");
                     }
                 });
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
         executor = Executors.newSingleThreadExecutor();
         adapter = new MessagesListAdapter();
         adapter.setExecutor(executor);
@@ -92,7 +89,6 @@ public class MessageActivity extends AppCompatActivity {
                         }
                     }
                 });
-        AdsHelper.initializeAds((AdView)findViewById(R.id.adView),this);
     }
 
     @Override

@@ -1,18 +1,14 @@
 package in.dc297.mqttclpro.activity;
 
-import android.app.NotificationManager;
-import android.content.Context;
 import android.content.Intent;
-import android.content.SharedPreferences;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
-import android.preference.PreferenceManager;
-import android.support.design.widget.FloatingActionButton;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.appcompat.widget.Toolbar;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,23 +19,15 @@ import android.widget.Toast;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import in.dc297.mqttclpro.BuildConfig;
 import in.dc297.mqttclpro.R;
 import in.dc297.mqttclpro.databinding.BrokerListItemBinding;
-import in.dc297.mqttclpro.dialog.AddTopicDialogFragment;
-import in.dc297.mqttclpro.dialog.AdsEnabledDialogFragment;
 import in.dc297.mqttclpro.entity.BrokerEntity;
-import in.dc297.mqttclpro.helpers.AdsHelper;
 import in.dc297.mqttclpro.services.MyMqttService;
 import io.reactivex.functions.Consumer;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
 import io.requery.reactivex.ReactiveEntityStore;
-
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 
 public class BrokersListActivity extends AppCompatActivity {
 
@@ -51,24 +39,24 @@ public class BrokersListActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_brokers_list);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         setTitle(getResources().getString(R.string.title_activity_brokers_list));
         //start service
         Intent svc = new Intent(this, MyMqttService.class);
         startService(svc);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 Intent intent = new Intent(getApplicationContext(),AddEditBrokersActivity.class);
-                intent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, AddEditBrokersActivity.GeneralPreferenceFragment.class.getName());
+                intent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, GeneralPreferenceFragment.class.getName());
                 intent.putExtra(PreferenceActivity.EXTRA_NO_HEADERS,true);
                 startActivity(intent);
             }
         });
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
         data = ((MQTTClientApplication) getApplication()).getData();
         executor = Executors.newSingleThreadExecutor();
         adapter = new BrokersListAdapter();
@@ -84,8 +72,6 @@ public class BrokersListActivity extends AppCompatActivity {
                         }
                     }
                 });
-        if(getAdsFirstTime()) new AdsEnabledDialogFragment().show(getFragmentManager(),"ADS_ENABLED_FRAGMENT");
-        AdsHelper.initializeAds((AdView)findViewById(R.id.adView),this);
     }
 
     @Override
@@ -114,11 +100,6 @@ public class BrokersListActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if(id == R.id.action_donate){
-            Intent donateIntent = new Intent(this,DonationActivity.class);
-            startActivity(donateIntent);
-            return true;
-        }
         if(id == R.id.action_settings){
             Intent settingsIntent = new Intent(this,SettingsActivity.class);
             startActivity(settingsIntent);
@@ -175,17 +156,6 @@ public class BrokersListActivity extends AppCompatActivity {
             }
             return true;
         }
-    }
-
-    private boolean getAdsFirstTime(){
-        SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        boolean flag = mSharedPreferences.getBoolean(getString(R.string.ads_first),true);
-        if(flag) {
-            SharedPreferences.Editor mSharedPrefsEditor = mSharedPreferences.edit();
-            mSharedPrefsEditor.putBoolean(getString(R.string.ads_first), false);
-            mSharedPrefsEditor.commit();
-        }
-        return flag;
     }
 
 }

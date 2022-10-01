@@ -2,7 +2,7 @@ package in.dc297.mqttclpro.tasker.activity;
 
 import android.content.Context;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import androidx.appcompat.widget.Toolbar;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
@@ -32,19 +32,19 @@ public class ActionEditActivity extends AbstractPluginActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_action_edit);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
+        Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         Bundle taskerBundle = getIntent().getBundleExtra(EXTRA_BUNDLE);
 
         final String topic = taskerBundle!=null?taskerBundle.getString(in.dc297.mqttclpro.tasker.activity.Intent.EXTRA_TOPIC):"";
         final String message = taskerBundle!=null ? taskerBundle.getString(in.dc297.mqttclpro.tasker.activity.Intent.EXTRA_MESSAGE) : "";
-        final boolean retained = taskerBundle!=null?taskerBundle.getBoolean(in.dc297.mqttclpro.tasker.activity.Intent.EXTRA_RETAINED,false):false;
+        final boolean retained = taskerBundle != null && taskerBundle.getBoolean(Intent.EXTRA_RETAINED, false);
         final String qos = taskerBundle!=null?taskerBundle.getString(in.dc297.mqttclpro.tasker.activity.Intent.EXTRA_QOS):"";
         final Long brokerId = taskerBundle!=null?taskerBundle.getLong(Intent.EXTRA_BROKER_ID):0;
 
 
-        final Spinner qosSpinner = (Spinner) findViewById(R.id.qos_spinner);
-        Switch retainedSwitch = (Switch) findViewById(R.id.message_retained);
+        final Spinner qosSpinner = findViewById(R.id.qos_spinner);
+        Switch retainedSwitch = findViewById(R.id.message_retained);
 
         ArrayAdapter qosAdapter = ArrayAdapter.createFromResource(this, R.array.qos_array, R.layout.simple_spinner_item_black);
         qosAdapter.setDropDownViewResource(R.layout.simple_spinner_dropdown_item_black);
@@ -60,7 +60,7 @@ public class ActionEditActivity extends AbstractPluginActivity {
             finish();
             return;
         }
-        Spinner brokerSpinner = (Spinner) findViewById(R.id.brokerSpinner);
+        Spinner brokerSpinner = findViewById(R.id.brokerSpinner);
 
         String[] brokers = new String[brokerEntityList.size()];
         int i_b = 0;
@@ -99,7 +99,7 @@ public class ActionEditActivity extends AbstractPluginActivity {
     {
         if (!isCanceled())
         {
-            final Switch retainedSwitch = (Switch) findViewById(R.id.message_retained);
+            final Switch retainedSwitch = findViewById(R.id.message_retained);
             final boolean retained = retainedSwitch.isChecked();
             String qos = ((Spinner) findViewById(R.id.qos_spinner)).getSelectedItem().toString();
             final String topic = ((EditText) findViewById(R.id.editText)).getText().toString();

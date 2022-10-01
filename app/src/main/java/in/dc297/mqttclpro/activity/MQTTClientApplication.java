@@ -1,14 +1,11 @@
 package in.dc297.mqttclpro.activity;
 
-import android.app.Application;
 import android.os.StrictMode;
-import android.support.multidex.MultiDexApplication;
+import androidx.multidex.MultiDexApplication;
 
-import in.dc297.mqttclpro.BuildConfig;
 import in.dc297.mqttclpro.entity.Models;
 import io.requery.Persistable;
 import io.requery.android.sqlite.DatabaseSource;
-import io.requery.cache.EntityCacheBuilder;
 import io.requery.meta.EntityModel;
 import io.requery.reactivex.ReactiveEntityStore;
 import io.requery.reactivex.ReactiveSupport;

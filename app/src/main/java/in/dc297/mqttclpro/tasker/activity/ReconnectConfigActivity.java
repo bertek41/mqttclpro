@@ -54,7 +54,7 @@ public class ReconnectConfigActivity extends AbstractPluginActivity {
             return;
         }
 
-        Spinner brokerSpinner = (Spinner) findViewById(R.id.brokerSpinner);
+        Spinner brokerSpinner = findViewById(R.id.brokerSpinner);
         String[] brokers = new String[brokerEntityList.size()];
         int i_b = 0;
         int selIndex_b = 0;
@@ -85,7 +85,7 @@ public class ReconnectConfigActivity extends AbstractPluginActivity {
     public void finish()
     {
         if (!isCanceled()) {
-            Spinner brokerSpinner = (Spinner) findViewById(R.id.brokerSpinner);
+            Spinner brokerSpinner = findViewById(R.id.brokerSpinner);
             int brokerPosition = brokerSpinner.getSelectedItemPosition();
             Long brokerId = (brokerEntityList.size()>brokerPosition) ? brokerEntityList.get(brokerPosition).getId() : 0;
             final String brokerNickName = brokerSpinner.getSelectedItem()!=null ? brokerSpinner.getSelectedItem().toString() : "";

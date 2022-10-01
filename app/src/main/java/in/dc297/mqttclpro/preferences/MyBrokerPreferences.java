@@ -1,11 +1,10 @@
 package in.dc297.mqttclpro.preferences;
 
 import android.content.SharedPreferences;
-import android.support.annotation.Nullable;
+import androidx.annotation.Nullable;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.Hashtable;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -112,10 +111,7 @@ public class MyBrokerPreferences implements SharedPreferences {
     @Override
     public boolean contains(String key) {
         Object value = getCustomValue(key);
-        if(value!=null){
-            return true;
-        }
-        return false;
+        return value != null;
     }
 
     @Override

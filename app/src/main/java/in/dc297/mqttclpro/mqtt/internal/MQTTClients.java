@@ -23,6 +23,7 @@ import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
 import org.eclipse.paho.client.mqttv3.persist.MemoryPersistence;
 
+import java.io.File;
 import java.sql.Timestamp;
 
 import java.util.Calendar;
@@ -74,8 +75,8 @@ public class MQTTClients {
             new Intent(in.dc297.mqttclpro.tasker.activity.Intent.ACTION_REQUEST_QUERY).putExtra(in.dc297.mqttclpro.tasker.activity.Intent.EXTRA_ACTIVITY,
                     ReconnectConfigActivity.class.getName());
 
-    private Handler handler;
-    private HandlerThread handlerThread;
+    private final Handler handler;
+    private final HandlerThread handlerThread;
 
     /**
      * List of clients
@@ -83,7 +84,7 @@ public class MQTTClients {
     private HashMap<Long, MqttAndroidClient> clients = null;
 
     /**Requery datastore object to save or delete or restore connections**/
-    private ReactiveEntityStore<Persistable> data;
+    private final ReactiveEntityStore<Persistable> data;
 
     private MQTTClientApplication application = null;
 
@@ -163,11 +164,11 @@ public class MQTTClients {
 
         boolean lastWillRetained = brokerEntity.getLastWillRetained();
 
-        String caCrt = brokerEntity.getCACrt();
-        String clientCrt = brokerEntity.getClientCrt();
-        String clientKey = brokerEntity.getClientKey();
+        String caCrt = application.getFilesDir().getAbsolutePath()+'/'+brokerEntity.getCACrt();
+        String clientCrt = application.getFilesDir().getAbsolutePath()+'/'+brokerEntity.getClientCrt();
+        String clientKey = application.getFilesDir().getAbsolutePath()+'/'+brokerEntity.getClientKey();
         String clientKeyPassword = brokerEntity.getClientKeyPwd();
-        String clientP12 = brokerEntity.getClientP12Crt();
+        String clientP12 = application.getFilesDir().getAbsolutePath()+'/'+brokerEntity.getClientP12Crt();
         String protocol = "tcp";
         if(ws) protocol = "ws";
         if(ssl){
@@ -202,12 +203,6 @@ public class MQTTClients {
                         e.printStackTrace();
                     }
                 }
-            }
-
-            @Override
-            public void startingConnect(boolean reconnect) {
-
-                setBrokerStatus(brokerEntity,(reconnect?"Rec":"C")+"onnecting to " + uri);
             }
 
 
@@ -395,18 +390,13 @@ public class MQTTClients {
                                 e.printStackTrace();
                             }*/
                             Calendar wakeUpTime = Calendar.getInstance();
-                            wakeUpTime.add(Calendar.MILLISECOND, mqttAndroidClient.getReconnectDelay());
+                            wakeUpTime.add(Calendar.MILLISECOND, 5000);
                             setBrokerStatus(brokerEntity, "Failed to connect to " + uri + ". Next Connect scheduled at " + wakeUpTime.getTime());
                             application.sendBroadcast(INTENT_REQUEST_REQUERY_CONN_LOST);
                             //Log.i(MQTTClients.class.getName(), "broadcasting connection lost with tasker id: " + taskerPassthroughMessageId);
                         }
                     }
 
-                }
-
-                @Override
-                public void onIntermediate(IMqttToken asyncActionToken) {
-                    setBrokerStatus(brokerEntity, "Connecting to " + uri);
                 }
             });
         } catch (MqttException e) {
@@ -442,10 +432,6 @@ public class MQTTClients {
                         if(exception!=null) exception.printStackTrace();
                     }
 
-                    @Override
-                    public void onIntermediate(IMqttToken asyncActionToken) {
-
-                    }
                 });
             } catch (MqttException e) {
                 e.printStackTrace();
@@ -489,10 +475,6 @@ public class MQTTClients {
                         if(exception!=null) exception.printStackTrace();
                     }
 
-                    @Override
-                    public void onIntermediate(IMqttToken asyncActionToken) {
-
-                    }
                 });
             } catch (MqttException e) {
                 Toast.makeText(application.getApplicationContext(),"Failed to publish!",Toast.LENGTH_SHORT).show();
@@ -532,9 +514,6 @@ public class MQTTClients {
                         }
                     }
 
-                    @Override
-                    public void onIntermediate(IMqttToken asyncActionToken) {
-                    }
                 });
 
             } catch (MqttException e) {
@@ -597,7 +576,7 @@ public class MQTTClients {
 
     }
 
-    private SharedPreferences.OnSharedPreferenceChangeListener mSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+    private final SharedPreferences.OnSharedPreferenceChangeListener mSharedPreferenceChangeListener = new SharedPreferences.OnSharedPreferenceChangeListener() {
         @Override
         public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
             if(key.equals(MAX_MESSAGES_KEY)){

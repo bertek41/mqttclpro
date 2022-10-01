@@ -1,10 +1,9 @@
 package in.dc297.mqttclpro.entity;
 
-import android.databinding.Bindable;
-import android.databinding.Observable;
+import androidx.databinding.Bindable;
+import androidx.databinding.Observable;
 import android.os.Parcelable;
 
-import io.requery.Column;
 import io.requery.Entity;
 import io.requery.Generated;
 import io.requery.Index;

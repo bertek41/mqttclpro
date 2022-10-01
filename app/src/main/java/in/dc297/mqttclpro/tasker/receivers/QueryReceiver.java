@@ -1,5 +1,11 @@
 package in.dc297.mqttclpro.tasker.receivers;
 
+import static in.dc297.mqttclpro.tasker.Constants.LOG_TAG;
+import static in.dc297.mqttclpro.tasker.activity.Intent.CONNECTION_LOST;
+import static in.dc297.mqttclpro.tasker.activity.Intent.EXTRA_BUNDLE;
+import static in.dc297.mqttclpro.tasker.activity.Intent.MESSAGE_ARRIVED;
+import static in.dc297.mqttclpro.tasker.activity.Intent.RECONNECTED;
+
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -25,12 +31,6 @@ import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
 import tasker.TaskerPlugin;
-
-import static in.dc297.mqttclpro.tasker.Constants.LOG_TAG;
-import static in.dc297.mqttclpro.tasker.activity.Intent.CONNECTION_LOST;
-import static in.dc297.mqttclpro.tasker.activity.Intent.EXTRA_BUNDLE;
-import static in.dc297.mqttclpro.tasker.activity.Intent.MESSAGE_ARRIVED;
-import static in.dc297.mqttclpro.tasker.activity.Intent.RECONNECTED;
 
 /**
  * Created by Deepesh on 10/26/2017.
@@ -116,7 +116,7 @@ public class QueryReceiver extends BroadcastReceiver {
                         .single()
                         .subscribeOn(Schedulers.single())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe();;
+                        .subscribe();
                 setResultCode(in.dc297.mqttclpro.tasker.activity.Intent.RESULT_CONDITION_SATISFIED);
             }
         }
@@ -155,7 +155,7 @@ public class QueryReceiver extends BroadcastReceiver {
                         .single()
                         .subscribeOn(Schedulers.single())
                         .observeOn(AndroidSchedulers.mainThread())
-                        .subscribe();;
+                        .subscribe();
                 setResultCode(in.dc297.mqttclpro.tasker.activity.Intent.RESULT_CONDITION_SATISFIED);
             }
         }

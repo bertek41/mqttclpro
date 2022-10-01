@@ -1,7 +1,7 @@
 package in.dc297.mqttclpro.activity;
 
-import android.databinding.ViewDataBinding;
-import android.support.v7.widget.RecyclerView;
+import androidx.databinding.ViewDataBinding;
+import androidx.recyclerview.widget.RecyclerView;
 
 /**
  * Created by Deepesh on 10/15/2017.

@@ -5,12 +5,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.support.design.widget.FloatingActionButton;
-import android.support.design.widget.Snackbar;
-import android.support.v7.app.AppCompatActivity;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.snackbar.Snackbar;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.KeyEvent;
@@ -27,9 +27,6 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdRequest;
-import com.google.android.gms.ads.AdView;
-import com.google.android.gms.ads.MobileAds;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
@@ -41,10 +38,8 @@ import java.util.concurrent.Executors;
 import in.dc297.mqttclpro.R;
 import in.dc297.mqttclpro.databinding.TopicListItemBinding;
 import in.dc297.mqttclpro.entity.BrokerEntity;
-import in.dc297.mqttclpro.entity.Message;
 import in.dc297.mqttclpro.entity.MessageEntity;
 import in.dc297.mqttclpro.entity.TopicEntity;
-import in.dc297.mqttclpro.helpers.AdsHelper;
 import in.dc297.mqttclpro.mqtt.Constants;
 import in.dc297.mqttclpro.mqtt.internal.MQTTClients;
 import io.reactivex.android.schedulers.AndroidSchedulers;
@@ -53,10 +48,8 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
-import io.requery.query.MutableResult;
 import io.requery.query.Result;
 import io.requery.reactivex.ReactiveEntityStore;
-import io.requery.sql.EntityDataStore;
 import io.requery.sql.StatementExecutionException;
 
 public class SubscribedTopicsActivity extends AppCompatActivity {
@@ -85,16 +78,16 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
             finish();
         }
         mqttClients = MQTTClients.getInstance((MQTTClientApplication)getApplication());
-        statusTV = (TextView)findViewById(R.id.statusTV);
+        statusTV = findViewById(R.id.statusTV);
         data = ((MQTTClientApplication) getApplication()).getData();
-        final Spinner qosSpinner = (Spinner) findViewById(R.id.qos_spinner);
+        final Spinner qosSpinner = findViewById(R.id.qos_spinner);
 
         ArrayAdapter qosAdapter = ArrayAdapter.createFromResource(this, R.array.qos_array, android.R.layout.simple_spinner_item);
         qosAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         qosSpinner.setAdapter(qosAdapter);
 
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
+        FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
@@ -104,7 +97,7 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
             }
         });
 
-        final EditText topicEdit = (EditText) findViewById(R.id.subscribeTopicEditText);
+        final EditText topicEdit = findViewById(R.id.subscribeTopicEditText);
         if (topicEdit != null) {
             topicEdit.setOnEditorActionListener(new TextView.OnEditorActionListener() {
                 @Override
@@ -116,7 +109,7 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
             });
         }
 
-        final Button subscribeButton = (Button) findViewById(R.id.subscribe_button);
+        final Button subscribeButton = findViewById(R.id.subscribe_button);
 
         subscribeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -126,7 +119,7 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
                 addTopic(v, qos,topic);
             }
         });
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
         executor = Executors.newSingleThreadExecutor();
         adapter = new TopicsListAdapter();
         adapter.setExecutor(executor);
@@ -142,9 +135,6 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
                         Log.i(SubscribedTopicsActivity.class.getName(),integer.toString());
                     }
                 });
-
-
-        AdsHelper.initializeAds((AdView)findViewById(R.id.adView),this);
     }
     @Override
     protected void onResume() {
@@ -208,7 +198,7 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
                                         }
                                     });
                                 }
-                            });;
+                            });
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
@@ -232,7 +222,7 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
                                 public void accept(Integer integer) throws Exception {
                                     adapter.queryAsync();
                                 }
-                            });;
+                            });
                 }
                 break;
             default:
@@ -287,7 +277,7 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
                     toDelete = (TopicEntity) binding.getTopic();
                 }
             });
-            TextView topicTV = (TextView) binding.getRoot().findViewById(R.id.topic_tv);
+            TextView topicTV = binding.getRoot().findViewById(R.id.topic_tv);
             if(getApplication().getResources().getConfiguration().orientation== Configuration.ORIENTATION_LANDSCAPE) topicTV.setMaxEms(20);
             else topicTV.setMaxEms(8);
             topicTV.setSelected(true);

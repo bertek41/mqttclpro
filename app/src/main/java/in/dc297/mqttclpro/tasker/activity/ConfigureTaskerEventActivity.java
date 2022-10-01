@@ -81,11 +81,11 @@ public class ConfigureTaskerEventActivity extends AbstractPluginActivity {
             return;
         }
         //comparators stuff starts
-        final Spinner topicComparatorSpinner = (Spinner)findViewById(R.id.topicComparatorSpinner);
+        final Spinner topicComparatorSpinner = findViewById(R.id.topicComparatorSpinner);
         ArrayAdapter dataAdapterTopicComparator = ArrayAdapter.createFromResource(this, R.array.comparators_array, R.layout.simple_spinner_item_black);
         dataAdapterTopicComparator.setDropDownViewResource(R.layout.simple_spinner_dropdown_item_black);
 
-        final Button topicComparatorButton = (Button) findViewById(R.id.topicComparatorButton);
+        final Button topicComparatorButton = findViewById(R.id.topicComparatorButton);
         topicComparatorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -107,11 +107,11 @@ public class ConfigureTaskerEventActivity extends AbstractPluginActivity {
             }
         });
 
-        final Spinner messageComparatorSpinner = (Spinner)findViewById(R.id.messageComparatorSpinner);
+        final Spinner messageComparatorSpinner = findViewById(R.id.messageComparatorSpinner);
         ArrayAdapter dataAdapterMessageComparator = ArrayAdapter.createFromResource(this, R.array.comparators_array, R.layout.simple_spinner_item_black);
         dataAdapterMessageComparator.setDropDownViewResource(R.layout.simple_spinner_dropdown_item_black);
 
-        final Button messageComparatorButton = (Button) findViewById(R.id.messageComparatorButton);
+        final Button messageComparatorButton = findViewById(R.id.messageComparatorButton);
         messageComparatorButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -132,7 +132,7 @@ public class ConfigureTaskerEventActivity extends AbstractPluginActivity {
             }
         });
         //comparators stuff end
-        Spinner brokerSpinner = (Spinner) findViewById(R.id.brokerSpinner);
+        Spinner brokerSpinner = findViewById(R.id.brokerSpinner);
 
         String[] brokers = new String[brokerEntityList.size()];
         int i_b = 0;
@@ -148,7 +148,7 @@ public class ConfigureTaskerEventActivity extends AbstractPluginActivity {
         dataAdapter_b.setDropDownViewResource(R.layout.simple_spinner_dropdown_item_black);
         brokerSpinner.setAdapter(dataAdapter_b);
 
-        final  Spinner topicSpinner = (Spinner) findViewById(R.id.editText);
+        final  Spinner topicSpinner = findViewById(R.id.editText);
         /*int i_t = 0;
         int selIndex_t = 0;
         Iterator<Topic> topicIterator = brokerEntityList.get(selIndex_b).getTopics().iterator();
@@ -246,10 +246,10 @@ public class ConfigureTaskerEventActivity extends AbstractPluginActivity {
     {
         if (!isCanceled())
         {
-            Spinner topicSpinner = (Spinner) findViewById(R.id.editText);
-            Spinner brokerSpinner = (Spinner) findViewById(R.id.brokerSpinner);
-            Spinner topicComparatorSpinner = (Spinner) findViewById(R.id.topicComparatorSpinner);
-            Spinner messageComparatorSpinner = (Spinner) findViewById(R.id.messageComparatorSpinner);
+            Spinner topicSpinner = findViewById(R.id.editText);
+            Spinner brokerSpinner = findViewById(R.id.brokerSpinner);
+            Spinner topicComparatorSpinner = findViewById(R.id.topicComparatorSpinner);
+            Spinner messageComparatorSpinner = findViewById(R.id.messageComparatorSpinner);
 
             if(topicSpinner!=null && topicSpinner.getSelectedItem()!=null && brokerSpinner!=null && brokerSpinner.getSelectedItem()!=null) {
                 final String topic = topicSpinner.getSelectedItem().toString();

@@ -58,21 +58,13 @@ public class Util {
                     }
                 }else if(sub.charAt(spos) == '#'){
                     multilevel_wildcard = true;
-                    if(spos+1 != slen){
-                        return false;
-                    }else{
-                        return true;
-                    }
+                    return spos + 1 == slen;
                 }else{
                     return false;
                 }
             }
         }
-        if(multilevel_wildcard == false && (tpos < tlen || spos < slen)){
-            return false;
-        }
-
-        return true;
+        return multilevel_wildcard != false || (tpos >= tlen && spos >= slen);
     }
 
     public static boolean isHostValid(String host){
@@ -83,10 +75,6 @@ public class Util {
         String IP_ADDRESS = "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$";
         String HOSTNAME = "^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\\-]*[a-zA-Z0-9])\\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\\-]*[A-Za-z0-9])$";
 
-        if(!host.matches(IP_ADDRESS) && ! host.matches(HOSTNAME)){
-            return false;
-        }
-
-        return true;
+        return host.matches(IP_ADDRESS) || host.matches(HOSTNAME);
     }
 }

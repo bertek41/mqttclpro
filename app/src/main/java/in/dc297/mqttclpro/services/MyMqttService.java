@@ -10,11 +10,10 @@ import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.TaskStackBuilder;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.TaskStackBuilder;
 import android.util.Log;
 
-import in.dc297.mqttclpro.BuildConfig;
 import in.dc297.mqttclpro.R;
 import in.dc297.mqttclpro.activity.BrokersListActivity;
 import in.dc297.mqttclpro.activity.MQTTClientApplication;

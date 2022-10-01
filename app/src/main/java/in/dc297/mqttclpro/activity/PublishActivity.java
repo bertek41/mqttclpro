@@ -2,10 +2,10 @@ package in.dc297.mqttclpro.activity;
 
 import android.content.Intent;
 import android.content.res.Configuration;
-import android.support.v7.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.LayoutInflater;
@@ -21,7 +21,6 @@ import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.gms.ads.AdView;
 
 import org.eclipse.paho.client.mqttv3.MqttMessage;
 import org.eclipse.paho.client.mqttv3.MqttTopic;
@@ -34,10 +33,8 @@ import java.util.concurrent.Executors;
 import in.dc297.mqttclpro.R;
 import in.dc297.mqttclpro.databinding.TopicListItemBinding;
 import in.dc297.mqttclpro.entity.BrokerEntity;
-import in.dc297.mqttclpro.entity.Message;
 import in.dc297.mqttclpro.entity.MessageEntity;
 import in.dc297.mqttclpro.entity.TopicEntity;
-import in.dc297.mqttclpro.helpers.AdsHelper;
 import in.dc297.mqttclpro.mqtt.internal.MQTTClients;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Action;
@@ -45,10 +42,8 @@ import io.reactivex.functions.Consumer;
 import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
-import io.requery.query.MutableResult;
 import io.requery.query.Result;
 import io.requery.reactivex.ReactiveEntityStore;
-import io.requery.sql.EntityDataStore;
 import io.requery.sql.RowCountException;
 import io.requery.util.CloseableIterator;
 
@@ -85,14 +80,14 @@ public class PublishActivity extends AppCompatActivity {
                     }
                 });
         mqttClients = MQTTClients.getInstance((MQTTClientApplication)getApplication());
-        final Spinner qosSpinner = (Spinner) findViewById(R.id.qos_spinner);
+        final Spinner qosSpinner = findViewById(R.id.qos_spinner);
 
         ArrayAdapter qosAdapter = ArrayAdapter.createFromResource(this, R.array.qos_array, android.R.layout.simple_spinner_item);
         qosAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
 
         qosSpinner.setAdapter(qosAdapter);
 
-        RecyclerView recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
+        RecyclerView recyclerView = findViewById(R.id.recyclerView);
         executor = Executors.newSingleThreadExecutor();
         adapter = new TopicsListAdapter();
         adapter.setExecutor(executor);
@@ -107,10 +102,10 @@ public class PublishActivity extends AppCompatActivity {
                         }
                     }
                 });
-        final EditText topicEditText = (EditText) findViewById(R.id.topic_edittext);
-        final EditText messageEditText = (EditText) findViewById(R.id.message_edittext);
-        final Switch retainedSwitch = (Switch) findViewById(R.id.message_retained);
-        Button publishButton = (Button) findViewById(R.id.publish_button);
+        final EditText topicEditText = findViewById(R.id.topic_edittext);
+        final EditText messageEditText = findViewById(R.id.message_edittext);
+        final Switch retainedSwitch = findViewById(R.id.message_retained);
+        Button publishButton = findViewById(R.id.publish_button);
         if (publishButton != null) {
             publishButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -191,8 +186,6 @@ public class PublishActivity extends AppCompatActivity {
                 }
             });
         }
-
-        AdsHelper.initializeAds((AdView)findViewById(R.id.adView),this);
     }
 
     @Override
@@ -215,7 +208,7 @@ public class PublishActivity extends AppCompatActivity {
                                             }
                                         });
                                     }
-                                });;
+                                });
                     }
                     catch(RowCountException rce){
                         rce.printStackTrace();
@@ -298,7 +291,7 @@ public class PublishActivity extends AppCompatActivity {
                     toDelete = (TopicEntity) binding.getTopic();
                 }
             });
-            TextView topicTV = (TextView) binding.getRoot().findViewById(R.id.topic_tv);
+            TextView topicTV = binding.getRoot().findViewById(R.id.topic_tv);
             if(getApplication().getResources().getConfiguration().orientation== Configuration.ORIENTATION_LANDSCAPE) topicTV.setMaxEms(20);
             else topicTV.setMaxEms(8);
             topicTV.setSelected(true);

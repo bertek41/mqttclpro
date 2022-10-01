@@ -1,20 +1,16 @@
 package in.dc297.mqttclpro.activity;
 
 
-import android.annotation.TargetApi;
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
-import android.support.v7.app.ActionBar;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
@@ -25,7 +21,9 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.widget.Toast;
 
-import com.github.angads25.filepicker.view.FilePickerPreference;
+import androidx.appcompat.app.ActionBar;
+
+import java.io.File;
 
 import in.dc297.mqttclpro.R;
 import in.dc297.mqttclpro.entity.BrokerEntity;
@@ -39,6 +37,11 @@ import io.reactivex.functions.Action;
 import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.reactivex.ReactiveEntityStore;
+
+
+
+
+
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -59,7 +62,7 @@ public class AddEditBrokersActivity extends AppCompatPreferenceActivity {
 
     public static final String EXTRA_BROKER_ID = "EXTRA_BROKER_ID";
 
-    private MyBrokerPreferences mBindablepreferences;
+    MyBrokerPreferences mBindablepreferences;
 
     private BrokerEntity broker;
 
@@ -72,7 +75,7 @@ public class AddEditBrokersActivity extends AppCompatPreferenceActivity {
         return mBindablepreferences;
     }
 
-    private static Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
+    static final Preference.OnPreferenceChangeListener sBindPreferenceSummaryToValueListener = new Preference.OnPreferenceChangeListener() {
         @Override
         public boolean onPreferenceChange(Preference preference, Object value) {
             String stringValue = value.toString();
@@ -110,6 +113,7 @@ public class AddEditBrokersActivity extends AppCompatPreferenceActivity {
                 }
 
             }
+            /*
             else if (preference instanceof FilePickerPreference){
                 if (TextUtils.isEmpty(stringValue) && "ClientP12Crt".equals(preference.getKey())) {
                     // Empty values correspond to 'silent' (no ringtone).
@@ -124,6 +128,7 @@ public class AddEditBrokersActivity extends AppCompatPreferenceActivity {
                 editor.putString(preference.getKey(), stringValue.split(":")[0]);
                 editor.commit();
             }
+            */
             else {
                 // For all other preferences, set the summary to the value's
                 // simple string representation.
@@ -151,7 +156,7 @@ public class AddEditBrokersActivity extends AppCompatPreferenceActivity {
      *
      * @see #sBindPreferenceSummaryToValueListener
      */
-    private static void bindPreferenceSummaryToValue(Preference preference) {
+    static void bindPreferenceSummaryToValue(Preference preference) {
         // Set the listener to watch for value changes.
         preference.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
 
@@ -306,6 +311,24 @@ public class AddEditBrokersActivity extends AppCompatPreferenceActivity {
                                 });
                 break;
             case R.id.cancel:
+                // Delete the files containing the keys since the broker creation is canceled
+                broker = mBindablepreferences.getBroker();
+                for (int i=0;i<4;i++)
+                {
+                    String fileName="";
+                    switch (i)
+                    {
+                        case 0: fileName=broker.getCACrt(); break;
+                        case 1: fileName=broker.getClientKey(); break;
+                        case 2: fileName=broker.getClientCrt(); break;
+                        case 3: fileName=broker.getClientP12Crt(); break;
+                    }
+                    if (fileName!=null && fileName.length()!=0) {
+                        File fdelete = new File(getFilesDir(), fileName);
+                        if (fdelete.exists())
+                            fdelete.delete();
+                    }
+                }
                 finish();
                 break;
             case R.id.delete:
@@ -336,101 +359,6 @@ public class AddEditBrokersActivity extends AppCompatPreferenceActivity {
 
         }
         return true;
-    }
-    /**
-     * This fragment shows general preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
-    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class GeneralPreferenceFragment extends PreferenceFragment {
-        @Override
-        public void onCreate(Bundle savedInstanceState) {
-            super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_general_broker);
-            setHasOptionsMenu(true);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            //bindPreferenceSummaryToValue(findPreference("ssl_switch"));
-            bindPreferenceSummaryToValue(findPreference("Host"));
-            bindPreferenceSummaryToValue(findPreference("Port"));
-            bindPreferenceSummaryToValue(findPreference("Username"));
-            bindPreferenceSummaryToValue(findPreference("ClientId"));
-            bindPreferenceSummaryToValue(findPreference("CACrt"));
-            bindPreferenceSummaryToValue(findPreference("ClientCrt"));
-            bindPreferenceSummaryToValue(findPreference("ClientKey"));
-            bindPreferenceSummaryToValue(findPreference("ClientP12Crt"));
-            bindPreferenceSummaryToValue(findPreference("LastWillTopic"));
-            bindPreferenceSummaryToValue(findPreference("LastWillMessage"));
-            bindPreferenceSummaryToValue(findPreference("LastWillQOS"));
-            bindPreferenceSummaryToValue(findPreference("NickName"));
-
-            final FilePickerPreference fileDialog = (FilePickerPreference) findPreference("CACrt");
-            fileDialog.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-            fileDialog.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (!"".equals(PreferenceManager
-                            .getDefaultSharedPreferences(preference.getContext())
-                            .getString(preference.getKey(), ""))) removePreference(preference);
-                    fileDialog.onPreferenceClick(preference);
-                    return false;
-                }
-            });
-
-            final FilePickerPreference fileDialog1 = (FilePickerPreference) findPreference("ClientCrt");
-            fileDialog1.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-            fileDialog1.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (!"".equals(PreferenceManager
-                            .getDefaultSharedPreferences(preference.getContext())
-                            .getString(preference.getKey(), ""))) removePreference(preference);
-                    fileDialog1.onPreferenceClick(preference);
-                    return false;
-                }
-            });
-
-            final FilePickerPreference fileDialog2 = (FilePickerPreference) findPreference("ClientKey");
-            fileDialog2.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-            fileDialog2.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (!"".equals(PreferenceManager
-                            .getDefaultSharedPreferences(preference.getContext())
-                            .getString(preference.getKey(), ""))) removePreference(preference);
-                    fileDialog2.onPreferenceClick(preference);
-                    return false;
-                }
-            });
-
-            final FilePickerPreference fileDialog3 = (FilePickerPreference) findPreference("ClientP12Crt");
-            fileDialog3.setOnPreferenceChangeListener(sBindPreferenceSummaryToValueListener);
-            fileDialog3.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    if (!"".equals(PreferenceManager
-                            .getDefaultSharedPreferences(preference.getContext())
-                            .getString(preference.getKey(), ""))) removePreference(preference);
-                    fileDialog3.onPreferenceClick(preference);
-                    return false;
-                }
-            });
-
-        }
-
-
-        @Override
-        public boolean onOptionsItemSelected(MenuItem item) {
-            int id = item.getItemId();
-            if (id == android.R.id.home) {
-                startActivity(new Intent(getActivity(), AddEditBrokersActivity.class));
-                return true;
-            }
-            return super.onOptionsItemSelected(item);
-        }
     }
 
 }

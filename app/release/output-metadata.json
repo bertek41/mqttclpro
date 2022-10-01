@@ -1,0 +1,20 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "in.dc297.mqttclpro",
+  "variantName": "release",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 54,
+      "versionName": "4.6",
+      "outputFile": "app-release.apk"
+    }
+  ],
+  "elementType": "File"
+}

@@ -1,7 +1,7 @@
 package in.dc297.mqttclpro.entity;
 
-import android.databinding.Bindable;
-import android.databinding.Observable;
+import androidx.databinding.Bindable;
+import androidx.databinding.Observable;
 import android.os.Parcelable;
 
 import java.sql.Timestamp;
@@ -12,7 +12,6 @@ import io.requery.Generated;
 import io.requery.Key;
 import io.requery.ManyToOne;
 import io.requery.Persistable;
-import io.requery.Transient;
 
 /**
  * Created by Deepesh on 10/15/2017.
