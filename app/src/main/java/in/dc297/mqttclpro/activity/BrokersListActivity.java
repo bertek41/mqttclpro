@@ -24,6 +24,7 @@ import in.dc297.mqttclpro.databinding.BrokerListItemBinding;
 import in.dc297.mqttclpro.entity.BrokerEntity;
 import in.dc297.mqttclpro.services.MyMqttService;
 import io.reactivex.functions.Consumer;
+import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
@@ -63,7 +64,7 @@ public class BrokersListActivity extends AppCompatActivity {
         adapter.setExecutor(executor);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        data.count(BrokerEntity.class).get().single()
+        data.count(BrokerEntity.class).get().single().subscribeOn(Schedulers.newThread())
                 .subscribe(new Consumer<Integer>() {
                     @Override
                     public void accept(Integer integer) {

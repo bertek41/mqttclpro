@@ -1,6 +1,10 @@
 package in.dc297.mqttclpro.mqtt.internal;
 
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -11,7 +15,9 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
-import org.eclipse.paho.android.service.MqttAndroidClient;
+import in.dc297.mqttclpro.R;
+import info.mqtt.android.service.Ack;
+import info.mqtt.android.service.MqttAndroidClient;
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -181,8 +187,23 @@ public class MQTTClients {
         }
         final String uri = protocol+"://" + hostName + ":" + portNum;
 
+        String channelId = "mqtt_channel";
+        String channelName = "MQTT Service";
+        int importance = NotificationManager.IMPORTANCE_DEFAULT;
+        NotificationChannel notificationChannel = new NotificationChannel(channelId, channelName, importance);
 
-        final MqttAndroidClient mqttAndroidClient = new MqttAndroidClient(application.getApplicationContext(),uri,clientId, new MemoryPersistence());
+        NotificationManager notificationManager = (NotificationManager) application.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
+        notificationManager.createNotificationChannel(notificationChannel);
+
+        Notification foregroundNotification = new Notification.Builder(application.getApplicationContext(), channelId)
+                .setContentTitle("MQTT Service")
+                .setContentText("MQTT service is running")
+                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                .build();
+
+        final MqttAndroidClient mqttAndroidClient = new MqttAndroidClient(application.getApplicationContext(),uri,clientId, Ack.AUTO_ACK, new MemoryPersistence());
+
+        mqttAndroidClient.setForegroundService(foregroundNotification);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
@@ -350,58 +371,54 @@ public class MQTTClients {
         else{
             connectOptions.setMqttVersion(MqttConnectOptions.MQTT_VERSION_3_1);
         }
-        try {
-            mqttAndroidClient.connect(connectOptions, null, new IMqttActionListener() {
-                @Override
-                public void onSuccess(IMqttToken asyncActionToken) {
-                    DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
-                    disconnectedBufferOptions.setBufferEnabled(true);
-                    disconnectedBufferOptions.setBufferSize(100);
-                    disconnectedBufferOptions.setPersistBuffer(true);
-                    disconnectedBufferOptions.setDeleteOldestMessages(false);
-                    mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
-                    setBrokerStatus(brokerEntity,"Connected to " + uri);
-                }
+        mqttAndroidClient.connect(connectOptions, null, new IMqttActionListener() {
+            @Override
+            public void onSuccess(IMqttToken asyncActionToken) {
+                DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
+                disconnectedBufferOptions.setBufferEnabled(true);
+                disconnectedBufferOptions.setBufferSize(100);
+                disconnectedBufferOptions.setPersistBuffer(true);
+                disconnectedBufferOptions.setDeleteOldestMessages(false);
+                mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
+                setBrokerStatus(brokerEntity,"Connected to " + uri);
+            }
 
 
-                @Override
-                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                   if(exception!=null) exception.printStackTrace();
-                    if(exception instanceof MqttException){
-                        if(((MqttException)exception).getReasonCode() == 32100){
-                            DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
-                            disconnectedBufferOptions.setBufferEnabled(true);
-                            disconnectedBufferOptions.setBufferSize(100);
-                            disconnectedBufferOptions.setPersistBuffer(false);
-                            disconnectedBufferOptions.setDeleteOldestMessages(false);
-                            mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
-                            setBrokerStatus(brokerEntity,"Connected to " + uri);
-                            //subscribeToTopics(brokerEntity,mqttAndroidClient);
-                            return;
-                        }
-                        else{
-                            /*TaskerPlugin.Event.addPassThroughMessageID(INTENT_REQUEST_REQUERY_CONN_LOST);
-                            int taskerPassthroughMessageId = TaskerPlugin.Event.addPassThroughData(INTENT_REQUEST_REQUERY_CONN_LOST, PluginBundleManager.generateBundle(application.getApplicationContext(), "", ""));
-                            brokerEntity.setTaskerPassThroughId(taskerPassthroughMessageId);
-                            try{
-                                data.update(brokerEntity).blockingGet();
-                            }
-                            catch(Exception e){
-                                e.printStackTrace();
-                            }*/
-                            Calendar wakeUpTime = Calendar.getInstance();
-                            wakeUpTime.add(Calendar.MILLISECOND, 5000);
-                            setBrokerStatus(brokerEntity, "Failed to connect to " + uri + ". Next Connect scheduled at " + wakeUpTime.getTime());
-                            application.sendBroadcast(INTENT_REQUEST_REQUERY_CONN_LOST);
-                            //Log.i(MQTTClients.class.getName(), "broadcasting connection lost with tasker id: " + taskerPassthroughMessageId);
-                        }
+            @Override
+            public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+               if(exception!=null) exception.printStackTrace();
+                if(exception instanceof MqttException){
+                    if(((MqttException)exception).getReasonCode() == 32100){
+                        DisconnectedBufferOptions disconnectedBufferOptions = new DisconnectedBufferOptions();
+                        disconnectedBufferOptions.setBufferEnabled(true);
+                        disconnectedBufferOptions.setBufferSize(100);
+                        disconnectedBufferOptions.setPersistBuffer(false);
+                        disconnectedBufferOptions.setDeleteOldestMessages(false);
+                        mqttAndroidClient.setBufferOpts(disconnectedBufferOptions);
+                        setBrokerStatus(brokerEntity,"Connected to " + uri);
+                        //subscribeToTopics(brokerEntity,mqttAndroidClient);
+                        return;
                     }
-
+                    else{
+                        /*TaskerPlugin.Event.addPassThroughMessageID(INTENT_REQUEST_REQUERY_CONN_LOST);
+                        int taskerPassthroughMessageId = TaskerPlugin.Event.addPassThroughData(INTENT_REQUEST_REQUERY_CONN_LOST, PluginBundleManager.generateBundle(application.getApplicationContext(), "", ""));
+                        brokerEntity.setTaskerPassThroughId(taskerPassthroughMessageId);
+                        try{
+                            data.update(brokerEntity).blockingGet();
+                        }
+                        catch(Exception e){
+                            e.printStackTrace();
+                        }*/
+                        Calendar wakeUpTime = Calendar.getInstance();
+                        wakeUpTime.add(Calendar.MILLISECOND, 5000);
+                        setBrokerStatus(brokerEntity, "Failed to connect to " + uri + ". Next Connect scheduled at " + wakeUpTime.getTime());
+                        application.sendBroadcast(INTENT_REQUEST_REQUERY_CONN_LOST);
+                        //Log.i(MQTTClients.class.getName(), "broadcasting connection lost with tasker id: " + taskerPassthroughMessageId);
+                    }
                 }
-            });
-        } catch (MqttException e) {
-            e.printStackTrace();
-        }
+
+            }
+        });
         return mqttAndroidClient;
     }
 
@@ -420,33 +437,25 @@ public class MQTTClients {
                 qoss[i] = topicEntity.getQOS();
                 i++;
             }
-            try {
-                mqttAndroidClient.subscribe(topics, qoss).setActionCallback(new IMqttActionListener() {
-                    @Override
-                    public void onSuccess(IMqttToken asyncActionToken) {
+            mqttAndroidClient.subscribe(topics, qoss).setActionCallback(new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
 
-                    }
+                }
 
-                    @Override
-                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                        if(exception!=null) exception.printStackTrace();
-                    }
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    if(exception!=null) exception.printStackTrace();
+                }
 
-                });
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
+            });
         }
     }
 
     public void subscribeToTopic(final BrokerEntity brokerEntity, String topic, int qos){
         MqttAndroidClient mqttAndroidClient = clients.get(brokerEntity.getId());
         if(mqttAndroidClient!=null){
-            try {
-                mqttAndroidClient.subscribe(topic, qos);
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
+            mqttAndroidClient.subscribe(topic, qos);
         }
     }
 
@@ -463,23 +472,18 @@ public class MQTTClients {
             mqttMessage.setRetained(retained);
             mqttMessage.setPayload(message.getBytes());
             mqttMessage.setQos(qos);
-            try {
-                mqttAndroidClient.publish(topic, mqttMessage, null, new IMqttActionListener() {
-                    @Override
-                    public void onSuccess(IMqttToken asyncActionToken) {
-                        Log.i(MQTTClients.class.getName(),"Successfully Published");
-                    }
+            mqttAndroidClient.publish(topic, mqttMessage, null, new IMqttActionListener() {
+                @Override
+                public void onSuccess(IMqttToken asyncActionToken) {
+                    Log.i(MQTTClients.class.getName(),"Successfully Published");
+                }
 
-                    @Override
-                    public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
-                        if(exception!=null) exception.printStackTrace();
-                    }
+                @Override
+                public void onFailure(IMqttToken asyncActionToken, Throwable exception) {
+                    if(exception!=null) exception.printStackTrace();
+                }
 
-                });
-            } catch (MqttException e) {
-                Toast.makeText(application.getApplicationContext(),"Failed to publish!",Toast.LENGTH_SHORT).show();
-                e.printStackTrace();
-            }
+            });
         }
     }
 
@@ -516,10 +520,7 @@ public class MQTTClients {
 
                 });
 
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
-            catch(IllegalArgumentException ee){
+            } catch(IllegalArgumentException ee){
                 ee.printStackTrace();
             }
         }
@@ -558,11 +559,7 @@ public class MQTTClients {
     public void unSubscribe(BrokerEntity brokerEntity, String topic){
         MqttAndroidClient mqttAndroidClient = clients.get(brokerEntity.getId());
         if(mqttAndroidClient!=null){
-            try {
-                mqttAndroidClient.unsubscribe(topic);
-            } catch (MqttException e) {
-                e.printStackTrace();
-            }
+            mqttAndroidClient.unsubscribe(topic);
         }
     }
 

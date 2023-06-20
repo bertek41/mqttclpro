@@ -9,7 +9,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Build;
 import android.os.IBinder;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.TaskStackBuilder;
 import android.util.Log;
@@ -71,8 +71,14 @@ public class MyMqttService extends Service implements SharedPreferences.OnShared
         // Adds the Intent to the top of the stack
         stackBuilder.addNextIntent(resultIntent);
         // Gets a PendingIntent containing the entire back stack
-        PendingIntent resultPendingIntent =
-                stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent resultPendingIntent = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S){
+            resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_MUTABLE);
+
+        }else {
+            resultPendingIntent = stackBuilder.getPendingIntent(0, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        }
 
         notification.contentIntent = resultPendingIntent;
         notification.priority = getNotificationPriority();
