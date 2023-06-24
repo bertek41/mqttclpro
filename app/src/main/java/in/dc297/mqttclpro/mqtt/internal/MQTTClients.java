@@ -1,12 +1,14 @@
 package in.dc297.mqttclpro.mqtt.internal;
 
 
+import android.Manifest;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.HandlerThread;
@@ -15,9 +17,15 @@ import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
 
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.app.NotificationManagerCompat;
+
 import in.dc297.mqttclpro.R;
+import in.dc297.mqttclpro.activity.SubscribedTopicsActivity;
 import info.mqtt.android.service.Ack;
 import info.mqtt.android.service.MqttAndroidClient;
+
 import org.eclipse.paho.client.mqttv3.DisconnectedBufferOptions;
 import org.eclipse.paho.client.mqttv3.IMqttActionListener;
 import org.eclipse.paho.client.mqttv3.IMqttDeliveryToken;
@@ -103,25 +111,25 @@ public class MQTTClients {
     /**
      * Create a clients object
      */
-    private MQTTClients(MQTTClientApplication mqttClientApplication){
+    private MQTTClients(MQTTClientApplication mqttClientApplication) {
         application = mqttClientApplication;
         clients = new HashMap<Long, MqttAndroidClient>();
         data = application.getData();
         List<BrokerEntity> brokerEntities = data.select(BrokerEntity.class).where(BrokerEntity.ENABLED.eq(true)).get().toList();
-        for(BrokerEntity brokerEntity : brokerEntities){
-            clients.put(brokerEntity.getId(),fromEntity(brokerEntity));
+        for (BrokerEntity brokerEntity : brokerEntities) {
+            clients.put(brokerEntity.getId(), fromEntity(brokerEntity));
         }
         handlerThread = new HandlerThread("messagearrived");
         handlerThread.start();
         handler = new Handler(handlerThread.getLooper());
         SharedPreferences mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(application.getApplicationContext());
-        maxMessages = Integer.parseInt(mSharedPreferences.getString(MAX_MESSAGES_KEY,"0"));
+        maxMessages = Integer.parseInt(mSharedPreferences.getString(MAX_MESSAGES_KEY, "0"));
         mSharedPreferences.registerOnSharedPreferenceChangeListener(mSharedPreferenceChangeListener);
     }
 
-    public synchronized static MQTTClients getInstance(MQTTClientApplication mqttClientApplication){
-        if(instance == null){
-            Log.i(MQTTClients.class.getName(),"creating new instance");
+    public synchronized static MQTTClients getInstance(MQTTClientApplication mqttClientApplication) {
+        if (instance == null) {
+            Log.i(MQTTClients.class.getName(), "creating new instance");
             instance = new MQTTClients(mqttClientApplication);
         }
         return instance;
@@ -131,10 +139,9 @@ public class MQTTClients {
     private MqttAndroidClient fromEntity(final BrokerEntity brokerEntity) {
         String hostName = brokerEntity.getHost();
         int portNum = Constants.DEFAULT_PORT_NUM;
-        try{
+        try {
             portNum = Integer.parseInt(brokerEntity.getPort());
-        }
-        catch(NumberFormatException nfe){
+        } catch (NumberFormatException nfe) {
             nfe.printStackTrace();
         }
 
@@ -143,10 +150,9 @@ public class MQTTClients {
         boolean ssl = brokerEntity.getSSLEnabled();
         boolean ws = brokerEntity.getWSEnabled();
         int keepAliveSeconds = Constants.DEFAULT_KEPPALIVE_INTERVAL;
-        try{
+        try {
             keepAliveSeconds = Short.parseShort(brokerEntity.getKeepAlive());
-        }
-        catch(NumberFormatException nfe){
+        } catch (NumberFormatException nfe) {
             nfe.printStackTrace();
         }
 
@@ -157,59 +163,41 @@ public class MQTTClients {
         String lastWillMessage = brokerEntity.getLastWillMessage();
         int lastWillQOS = Constants.DEFAULT_QOS;
 
-        try{
+        try {
             lastWillQOS = Integer.parseInt(brokerEntity.getLastWillQOS());
             MqttMessage.validateQos(lastWillQOS);
-        }
-        catch (NumberFormatException nfe){
+        } catch (NumberFormatException nfe) {
             nfe.printStackTrace();
-        }
-        catch(IllegalArgumentException iae){
+        } catch (IllegalArgumentException iae) {
             iae.printStackTrace();
         }
 
         boolean lastWillRetained = brokerEntity.getLastWillRetained();
 
-        String caCrt = application.getFilesDir().getAbsolutePath()+'/'+brokerEntity.getCACrt();
-        String clientCrt = application.getFilesDir().getAbsolutePath()+'/'+brokerEntity.getClientCrt();
-        String clientKey = application.getFilesDir().getAbsolutePath()+'/'+brokerEntity.getClientKey();
+        String caCrt = application.getFilesDir().getAbsolutePath() + '/' + brokerEntity.getCACrt();
+        String clientCrt = application.getFilesDir().getAbsolutePath() + '/' + brokerEntity.getClientCrt();
+        String clientKey = application.getFilesDir().getAbsolutePath() + '/' + brokerEntity.getClientKey();
         String clientKeyPassword = brokerEntity.getClientKeyPwd();
-        String clientP12 = application.getFilesDir().getAbsolutePath()+'/'+brokerEntity.getClientP12Crt();
+        String clientP12 = application.getFilesDir().getAbsolutePath() + '/' + brokerEntity.getClientP12Crt();
         String protocol = "tcp";
-        if(ws) protocol = "ws";
-        if(ssl){
-            if(ws) {
+        if (ws) protocol = "ws";
+        if (ssl) {
+            if (ws) {
                 protocol = "wss";
-            }
-            else{
+            } else {
                 protocol = "ssl";
             }
         }
-        final String uri = protocol+"://" + hostName + ":" + portNum;
+        final String uri = protocol + "://" + hostName + ":" + portNum;
 
-        String channelId = "mqtt_channel";
-        String channelName = "MQTT Service";
-        int importance = NotificationManager.IMPORTANCE_DEFAULT;
-        NotificationChannel notificationChannel = new NotificationChannel(channelId, channelName, importance);
+        final MqttAndroidClient mqttAndroidClient = new MqttAndroidClient(application.getApplicationContext(), uri, clientId, Ack.AUTO_ACK, new MemoryPersistence());
 
-        NotificationManager notificationManager = (NotificationManager) application.getApplicationContext().getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.createNotificationChannel(notificationChannel);
-
-        Notification foregroundNotification = new Notification.Builder(application.getApplicationContext(), channelId)
-                .setContentTitle("MQTT Service")
-                .setContentText("MQTT service is running")
-                .setSmallIcon(R.drawable.ic_notifications_black_24dp)
-                .build();
-
-        final MqttAndroidClient mqttAndroidClient = new MqttAndroidClient(application.getApplicationContext(),uri,clientId, Ack.AUTO_ACK, new MemoryPersistence());
-
-        mqttAndroidClient.setForegroundService(foregroundNotification);
         mqttAndroidClient.setCallback(new MqttCallbackExtended() {
             @Override
             public void connectComplete(boolean reconnect, String serverURI) {
-                setBrokerStatus(brokerEntity,(reconnect?"Rec":"C")+"onnected to " + uri);
-                subscribeToTopics(brokerEntity,mqttAndroidClient);
-                if(reconnect) {
+                setBrokerStatus(brokerEntity, (reconnect ? "Rec" : "C") + "onnected to " + uri);
+                subscribeToTopics(brokerEntity, mqttAndroidClient);
+                if (reconnect) {
                     int taskerPassthroughMessageId = TaskerPlugin.Event.addPassThroughMessageID(INTENT_REQUEST_REQUERY_RECONNECTED);
                     TaskerPlugin.Event.addPassThroughData(INTENT_REQUEST_REQUERY_RECONNECTED, PluginBundleManager.generateBundle(application.getApplicationContext(), "", "", taskerPassthroughMessageId));
 
@@ -229,14 +217,13 @@ public class MQTTClients {
 
             @Override
             public void connectionLost(Throwable cause) {
-                if(cause!=null) cause.printStackTrace();
+                if (cause != null) cause.printStackTrace();
                 int taskerPassthroughMessageId = TaskerPlugin.Event.addPassThroughMessageID(INTENT_REQUEST_REQUERY_CONN_LOST);
-                TaskerPlugin.Event.addPassThroughData(INTENT_REQUEST_REQUERY_CONN_LOST,PluginBundleManager.generateBundle(application.getApplicationContext(), "", "",taskerPassthroughMessageId));
+                TaskerPlugin.Event.addPassThroughData(INTENT_REQUEST_REQUERY_CONN_LOST, PluginBundleManager.generateBundle(application.getApplicationContext(), "", "", taskerPassthroughMessageId));
 
-                if(!brokerEntity.getEnabled()){
+                if (!brokerEntity.getEnabled()) {
                     setBrokerStatus(brokerEntity, "Disabled");
-                }
-                else {
+                } else {
                     brokerEntity.setTaskerPassThroughId(taskerPassthroughMessageId);
                     try {
                         data.update(brokerEntity).blockingGet();
@@ -271,6 +258,22 @@ public class MQTTClients {
                                         messageEntity.setTimeStamp(new Timestamp(System.currentTimeMillis()));
                                         messageEntity.setDisplayTopic(receivedTopic);
                                         messageEntity.setRetained(receivedMessage.isRetained());
+
+                                        String channelId = "mqtt_notification_channel";
+                                        String channelName = "MQTT Notifications";
+
+                                        NotificationChannel channel = new NotificationChannel(channelId, channelName, NotificationManager.IMPORTANCE_DEFAULT);
+                                        NotificationManager notificationManager = application.getSystemService(NotificationManager.class);
+                                        notificationManager.createNotificationChannel(channel);
+
+                                        NotificationCompat.Builder mBuilder =
+                                                new NotificationCompat.Builder(application.getApplicationContext(), channelId)
+                                                        .setSmallIcon(R.drawable.ic_notifications_black_24dp)
+                                                        .setContentTitle(receivedTopic)
+                                                        .setContentText(receivedMessage.toString());
+                                        NotificationManager mNotificationManager =
+                                                (NotificationManager) application.getSystemService(Context.NOTIFICATION_SERVICE);
+                                        mNotificationManager.notify(31, mBuilder.build());
 
                                         final int taskerMessageId = TaskerPlugin.Event.addPassThroughMessageID(INTENT_REQUEST_REQUERY);
                                         messageEntity.setTaskerId(taskerMessageId);

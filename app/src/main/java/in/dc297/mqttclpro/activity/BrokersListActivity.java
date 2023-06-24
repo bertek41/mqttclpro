@@ -1,14 +1,18 @@
 package in.dc297.mqttclpro.activity;
 
+import android.Manifest;
 import android.content.Intent;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.app.ActivityCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.appcompat.widget.Toolbar;
+
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -23,8 +27,8 @@ import in.dc297.mqttclpro.R;
 import in.dc297.mqttclpro.databinding.BrokerListItemBinding;
 import in.dc297.mqttclpro.entity.BrokerEntity;
 import in.dc297.mqttclpro.services.MyMqttService;
+import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.functions.Consumer;
-import io.reactivex.schedulers.Schedulers;
 import io.requery.Persistable;
 import io.requery.android.QueryRecyclerAdapter;
 import io.requery.query.Result;
@@ -51,9 +55,9 @@ public class BrokersListActivity extends AppCompatActivity {
         fab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(getApplicationContext(),AddEditBrokersActivity.class);
+                Intent intent = new Intent(getApplicationContext(), AddEditBrokersActivity.class);
                 intent.putExtra(PreferenceActivity.EXTRA_SHOW_FRAGMENT, GeneralPreferenceFragment.class.getName());
-                intent.putExtra(PreferenceActivity.EXTRA_NO_HEADERS,true);
+                intent.putExtra(PreferenceActivity.EXTRA_NO_HEADERS, true);
                 startActivity(intent);
             }
         });
@@ -64,15 +68,28 @@ public class BrokersListActivity extends AppCompatActivity {
         adapter.setExecutor(executor);
         recyclerView.setAdapter(adapter);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-        data.count(BrokerEntity.class).get().single().subscribeOn(Schedulers.newThread())
+        data.count(BrokerEntity.class).get().single().observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Consumer<Integer>() {
                     @Override
                     public void accept(Integer integer) {
-                        if (integer == 0) {
-                            Toast.makeText(getApplicationContext(), "Please add a broker!",Toast.LENGTH_SHORT).show();
+                        if(integer == 0) {
+                            Toast.makeText(BrokersListActivity.this, "Please add a broker!", Toast.LENGTH_SHORT).show();
                         }
                     }
                 });
+        if(!shouldShowRequestPermissionRationale("112")) {
+            getNotificationPermission();
+        }
+    }
+
+    public void getNotificationPermission() {
+        try {
+            ActivityCompat.requestPermissions(this,
+                    new String[]{Manifest.permission.POST_NOTIFICATIONS},
+                    112);
+        } catch(Exception e) {
+
+        }
     }
 
     @Override
@@ -87,6 +104,7 @@ public class BrokersListActivity extends AppCompatActivity {
         adapter.close();
         super.onDestroy();
     }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -101,8 +119,8 @@ public class BrokersListActivity extends AppCompatActivity {
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
-        if(id == R.id.action_settings){
-            Intent settingsIntent = new Intent(this,SettingsActivity.class);
+        if(id == R.id.action_settings) {
+            Intent settingsIntent = new Intent(this, SettingsActivity.class);
             startActivity(settingsIntent);
             return true;
         }
@@ -112,15 +130,16 @@ public class BrokersListActivity extends AppCompatActivity {
 
     public class BrokersListAdapter extends QueryRecyclerAdapter<BrokerEntity, BindingHolder<BrokerListItemBinding>> implements View.OnClickListener, View.OnLongClickListener {
 
-        BrokersListAdapter(){
+        BrokersListAdapter() {
             super(BrokerEntity.$TYPE);
         }
+
         @Override
         public void onClick(View v) {
             BrokerListItemBinding binding = (BrokerListItemBinding) v.getTag();
-            if(binding!=null){
-                Intent intent = new Intent(v.getContext(),SubscribedTopicsActivity.class);
-                intent.putExtra(SubscribedTopicsActivity.EXTRA_BROKER_ID,binding.getBroker().getId());
+            if(binding != null) {
+                Intent intent = new Intent(v.getContext(), SubscribedTopicsActivity.class);
+                intent.putExtra(SubscribedTopicsActivity.EXTRA_BROKER_ID, binding.getBroker().getId());
                 startActivity(intent);
             }
         }
@@ -137,7 +156,7 @@ public class BrokersListActivity extends AppCompatActivity {
 
         @Override
         public BindingHolder<BrokerListItemBinding> onCreateViewHolder(ViewGroup parent, int viewType) {
-            LayoutInflater inflater  = LayoutInflater.from(parent.getContext());
+            LayoutInflater inflater = LayoutInflater.from(parent.getContext());
             BrokerListItemBinding binding = BrokerListItemBinding.inflate(inflater, parent, false);
             binding.getRoot().setTag(binding);
             binding.getRoot().setOnClickListener(this);
@@ -149,9 +168,9 @@ public class BrokersListActivity extends AppCompatActivity {
         @Override
         public boolean onLongClick(View v) {
             BrokerListItemBinding binding = (BrokerListItemBinding) v.getTag();
-            if(binding!=null){
-                Intent intent = new Intent(v.getContext(),AddEditBrokersActivity.class);
-                intent.putExtra(AddEditBrokersActivity.EXTRA_BROKER_ID,binding.getBroker().getId());
+            if(binding != null) {
+                Intent intent = new Intent(v.getContext(), AddEditBrokersActivity.class);
+                intent.putExtra(AddEditBrokersActivity.EXTRA_BROKER_ID, binding.getBroker().getId());
                 //Toast.makeText(v.getContext(),binding.getBroker().toString(),Toast.LENGTH_SHORT).show();
                 startActivity(intent);
             }

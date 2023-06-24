@@ -9,6 +9,7 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.snackbar.Snackbar;
 import androidx.appcompat.app.AppCompatActivity;
 import android.os.Bundle;
+
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.util.Log;
@@ -74,7 +75,7 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         brokerId = intent.getLongExtra(EXTRA_BROKER_ID, -1);
         if (brokerId == -1) {
-            Toast.makeText(getApplicationContext(), "Something's wrong", Toast.LENGTH_SHORT).show();
+            Toast.makeText(SubscribedTopicsActivity.this, "Something's wrong", Toast.LENGTH_SHORT).show();
             finish();
         }
         mqttClients = MQTTClients.getInstance((MQTTClientApplication)getApplication());
@@ -130,7 +131,7 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
                     @Override
                     public void accept(Integer integer) {
                         if (integer == 0) {
-                            Toast.makeText(getApplicationContext(), "Please add a topic!",Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SubscribedTopicsActivity.this, "Please add a topic!",Toast.LENGTH_SHORT).show();
                         }
                         Log.i(SubscribedTopicsActivity.class.getName(),integer.toString());
                     }
@@ -349,10 +350,10 @@ public class SubscribedTopicsActivity extends AppCompatActivity {
                     @Override
                     public void accept(Throwable throwable) throws Exception {
                         if(throwable instanceof StatementExecutionException) {
-                            Toast.makeText(getApplicationContext(), "Topic already Exists!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SubscribedTopicsActivity.this, "Topic already Exists!", Toast.LENGTH_SHORT).show();
                         }
                         else{
-                            Toast.makeText(getApplicationContext(), "Unknown error occurred!", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SubscribedTopicsActivity.this, "Unknown error occurred!", Toast.LENGTH_SHORT).show();
                         }
                         throwable.printStackTrace();
                     }
